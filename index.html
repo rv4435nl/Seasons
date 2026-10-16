@@ -6,12 +6,13 @@
 <title>Vacation Survey</title>
 
 <style>
+
 body{
     font-family:Arial, sans-serif;
-    background:#f4f4f4;
     max-width:800px;
     margin:40px auto;
     padding:20px;
+    background:#f4f4f4;
 }
 
 .container{
@@ -19,10 +20,6 @@ body{
     padding:25px;
     border-radius:10px;
     box-shadow:0 0 10px rgba(0,0,0,.15);
-}
-
-h1,h2{
-    text-align:center;
 }
 
 .question{
@@ -38,10 +35,9 @@ button{
     color:white;
     border:none;
     padding:12px 20px;
-    margin-right:10px;
     border-radius:5px;
     cursor:pointer;
-    font-size:16px;
+    margin-right:10px;
 }
 
 button:hover{
@@ -50,10 +46,10 @@ button:hover{
 
 #results,
 #analysisResults{
+    display:none;
     margin-top:20px;
     padding:15px;
     border-radius:5px;
-    display:none;
 }
 
 #results{
@@ -61,10 +57,20 @@ button:hover{
 }
 
 #analysisResults{
-    background:#f0fff0;
+    background:#eefbea;
 }
-</style>
 
+.error{
+    color:red;
+    font-weight:bold;
+}
+
+pre{
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+</style>
 </head>
 <body>
 
@@ -75,22 +81,26 @@ button:hover{
 <form id="surveyForm">
 
 <div class="question">
+
 <h3>1. Which season is your favorite?</h3>
 
 <label>
 <input type="radio" name="season" value="Spring" required>
 Spring
-</label><br>
+</label>
+<br>
 
 <label>
 <input type="radio" name="season" value="Summer">
 Summer
-</label><br>
+</label>
+<br>
 
 <label>
 <input type="radio" name="season" value="Fall">
 Fall
-</label><br>
+</label>
+<br>
 
 <label>
 <input type="radio" name="season" value="Winter">
@@ -100,17 +110,18 @@ Winter
 </div>
 
 <div class="question">
+
 <h3>2. What is your favorite temperature (°F)?</h3>
+
 <input type="number" id="temperature" required>
+
 </div>
 
 <div class="question">
+
 <h3>3. What is your favorite activity to do on vacation?</h3>
 
-<textarea
-id="activity"
-rows="5"
-required></textarea>
+<textarea id="activity" rows="5" required></textarea>
 
 </div>
 
@@ -135,6 +146,7 @@ View Survey Analysis
 const WEB_APP_URL =
 "https://script.google.com/macros/s/AKfycbzEd2fQP7owvJAB8ulOAhiGhlmYWd5ILbihc0_yEbkWKcHoIFoJaGXlIOKXXQ4B8X3e/exec";
 
+
 document.getElementById("surveyForm").addEventListener("submit", async function(event){
 
     event.preventDefault();
@@ -147,6 +159,11 @@ document.getElementById("surveyForm").addEventListener("submit", async function(
 
     const activity =
         document.getElementById("activity").value;
+
+    document.getElementById("results").style.display = "block";
+
+    document.getElementById("results").innerHTML =
+        "<p>Submitting survey...</p>";
 
     try{
 
@@ -162,69 +179,107 @@ document.getElementById("surveyForm").addEventListener("submit", async function(
             })
         });
 
-        const result = await response.json();
+        const responseText = await response.text();
 
-        document.getElementById("results").style.display = "block";
+        console.log("Server Response:");
+        console.log(responseText);
+
+        let result;
+
+        try{
+            result = JSON.parse(responseText);
+        }
+        catch(parseError){
+
+            document.getElementById("results").innerHTML =
+                "<h3 class='error'>Server did not return JSON.</h3>" +
+                "<pre>" + responseText + "</pre>";
+
+            return;
+        }
+
+        if(result.success === false){
+
+            document.getElementById("results").innerHTML =
+                "<h3 class='error'>Apps Script Error</h3>" +
+                "<pre>" + result.error + "</pre>";
+
+            return;
+        }
 
         document.getElementById("results").innerHTML =
-            "<h2>Survey Submitted!</h2>" +
-            "<p><strong>Season:</strong> " + season + "</p>" +
-            "<p><strong>Favorite Temperature:</strong> " + temperature + "°F</p>" +
-            "<p><strong>Vacation Activity:</strong> " + activity + "</p>" +
+
+            "<h2>Survey Submitted</h2>" +
+
+            "<p><b>Favorite Season:</b> "
+            + season + "</p>" +
+
+            "<p><b>Favorite Temperature:</b> "
+            + temperature + "°F</p>" +
+
+            "<p><b>Vacation Activity:</b> "
+            + activity + "</p>" +
+
             "<hr>" +
-            "<p><strong>AI Analysis:</strong></p>" +
-            "<p>" + result.analysis + "</p>";
+
+            "<p><b>AI Analysis:</b></p>" +
+
+            "<p>" +
+            (result.analysis || "No analysis returned.") +
+            "</p>";
 
     }
     catch(error){
 
-        document.getElementById("results").style.display = "block";
+        console.error(error);
 
         document.getElementById("results").innerHTML =
-            "<p style='color:red;'>Unable to submit survey.</p>";
 
-        console.error(error);
+            "<h3 class='error'>Unable to submit survey</h3>" +
+
+            "<p>The request never reached Apps Script or Apps Script rejected the request.</p>" +
+
+            "<pre>" +
+            error +
+            "</pre>";
+
     }
 
 });
+
 
 document.getElementById("analysisBtn").addEventListener("click", async function(){
 
     try{
 
         const response =
-            await fetch(WEB_APP_URL + "?action=analysis");
+            await fetch(
+                WEB_APP_URL + "?action=analysis"
+            );
+
+        const text =
+            await response.text();
 
         const data =
-            await response.json();
+            JSON.parse(text);
 
         document.getElementById("analysisResults").style.display = "block";
 
         document.getElementById("analysisResults").innerHTML =
 
-        "<h2>Survey Analysis</h2>" +
+            "<h2>Survey Analysis</h2>" +
 
-        "<p><strong>Total Responses:</strong> " +
-        data.totalResponses +
-        "</p>" +
+            "<p><b>Total Responses:</b> "
+            + data.totalResponses +
+            "</p>" +
 
-        "<p><strong>Most Popular Season:</strong> " +
-        data.favoriteSeason +
-        "</p>" +
+            "<p><b>Most Popular Season:</b> "
+            + data.favoriteSeason +
+            "</p>" +
 
-        "<p><strong>Average Temperature:</strong> " +
-        data.averageTemperature +
-        "°F</p>" +
-
-        "<h3>Vacation Activity Themes</h3>" +
-
-        "<ul>" +
-
-        data.activityThemes.map(function(item){
-            return "<li>" + item + "</li>";
-        }).join("") +
-
-        "</ul>";
+            "<p><b>Average Temperature:</b> "
+            + data.averageTemperature +
+            "°F</p>";
 
     }
     catch(error){
@@ -232,9 +287,13 @@ document.getElementById("analysisBtn").addEventListener("click", async function(
         document.getElementById("analysisResults").style.display = "block";
 
         document.getElementById("analysisResults").innerHTML =
-            "<p style='color:red;'>Unable to load survey analysis.</p>";
 
-        console.error(error);
+            "<h3 class='error'>Analysis Error</h3>" +
+
+            "<pre>" +
+            error +
+            "</pre>";
+
     }
 
 });
