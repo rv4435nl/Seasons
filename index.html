@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vacation Survey</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .survey-box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 8px #cccccc;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .question {
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+        }
+
+        button {
+            background-color: #0078D7;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #005ea6;
+        }
+
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f4ff;
+            display: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="survey-box">
+
+    <h1>Vacation Survey</h1>
+
+    <form id="surveyForm">
+
+        <div class="question">
+            <h3>1. Which season is your favorite?</h3>
+
+            <input type="radio" name="season" value="Spring" required>
+            Spring<br>
+
+            <input type="radio" name="season" value="Summer">
+            Summer<br>
+
+            <input type="radio" name="season" value="Fall">
+            Fall<br>
+
+            <input type="radio" name="season" value="Winter">
+            Winter
+        </div>
+
+        <div class="question">
+            <h3>2. What is your favorite temperature (°F)?</h3>
+
+            <input type="number" id="temperature" required>
+        </div>
+
+        <div class="question">
+            <h3>3. What is your favorite activity to do on vacation?</h3>
+
+            <textarea
+                id="activity"
+                rows="5"
+                required></textarea>
+        </div>
+
+        <button type="submit">Submit Survey</button>
+
+    </form>
+
+    <div id="results"></div>
+
+</div>
+
+<script>
+
+document.getElementById("surveyForm").addEventListener("submit", function(event){
+
+    event.preventDefault();
+
+    let season =
+        document.querySelector('input[name="season"]:checked').value;
+
+    let temperature =
+        document.getElementById("temperature").value;
+
+    let activity =
+        document.getElementById("activity").value;
+
+    document.getElementById("results").style.display = "block";
+
+    document.getElementById("results").innerHTML =
+        "<h2>Survey Submitted!</h2>" +
+        "<p><strong>Favorite Season:</strong> " + season + "</p>" +
+        "<p><strong>Favorite Temperature:</strong> " + temperature + "°F</p>" +
+        "<p><strong>Favorite Vacation Activity:</strong> " + activity + "</p>";
+
+});
+
+</script>
+
+</body>
+</html>
