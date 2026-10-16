@@ -1,129 +1,241 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Vacation Survey</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vacation Survey</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 700px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
+<style>
+body{
+    font-family:Arial, sans-serif;
+    background:#f4f4f4;
+    max-width:800px;
+    margin:40px auto;
+    padding:20px;
+}
 
-        .survey-box {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 8px #cccccc;
-        }
+.container{
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.15);
+}
 
-        h1 {
-            text-align: center;
-        }
+h1,h2{
+    text-align:center;
+}
 
-        .question {
-            margin-bottom: 20px;
-        }
+.question{
+    margin-bottom:25px;
+}
 
-        textarea {
-            width: 100%;
-        }
+textarea{
+    width:100%;
+}
 
-        button {
-            background-color: #0078D7;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+button{
+    background:#0078D7;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    margin-right:10px;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:16px;
+}
 
-        button:hover {
-            background-color: #005ea6;
-        }
+button:hover{
+    background:#005ea6;
+}
 
-        #results {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e8f4ff;
-            display: none;
-            border-radius: 5px;
-        }
-    </style>
+#results,
+#analysisResults{
+    margin-top:20px;
+    padding:15px;
+    border-radius:5px;
+    display:none;
+}
+
+#results{
+    background:#e8f4ff;
+}
+
+#analysisResults{
+    background:#f0fff0;
+}
+</style>
+
 </head>
-
 <body>
 
-<div class="survey-box">
+<div class="container">
 
-    <h1>Vacation Survey</h1>
+<h1>Vacation Survey</h1>
 
-    <form id="surveyForm">
+<form id="surveyForm">
 
-        <div class="question">
-            <h3>1. Which season is your favorite?</h3>
+<div class="question">
+<h3>1. Which season is your favorite?</h3>
 
-            <input type="radio" name="season" value="Spring" required>
-            Spring<br>
+<label>
+<input type="radio" name="season" value="Spring" required>
+Spring
+</label><br>
 
-            <input type="radio" name="season" value="Summer">
-            Summer<br>
+<label>
+<input type="radio" name="season" value="Summer">
+Summer
+</label><br>
 
-            <input type="radio" name="season" value="Fall">
-            Fall<br>
+<label>
+<input type="radio" name="season" value="Fall">
+Fall
+</label><br>
 
-            <input type="radio" name="season" value="Winter">
-            Winter
-        </div>
+<label>
+<input type="radio" name="season" value="Winter">
+Winter
+</label>
 
-        <div class="question">
-            <h3>2. What is your favorite temperature (°F)?</h3>
+</div>
 
-            <input type="number" id="temperature" required>
-        </div>
+<div class="question">
+<h3>2. What is your favorite temperature (°F)?</h3>
+<input type="number" id="temperature" required>
+</div>
 
-        <div class="question">
-            <h3>3. What is your favorite activity to do on vacation?</h3>
+<div class="question">
+<h3>3. What is your favorite activity to do on vacation?</h3>
 
-            <textarea
-                id="activity"
-                rows="5"
-                required></textarea>
-        </div>
+<textarea
+id="activity"
+rows="5"
+required></textarea>
 
-        <button type="submit">Submit Survey</button>
+</div>
 
-    </form>
+<button type="submit">
+Submit Survey
+</button>
 
-    <div id="results"></div>
+<button type="button" id="analysisBtn">
+View Survey Analysis
+</button>
+
+</form>
+
+<div id="results"></div>
+
+<div id="analysisResults"></div>
 
 </div>
 
 <script>
 
-document.getElementById("surveyForm").addEventListener("submit", function(event){
+const WEB_APP_URL =
+"https://script.google.com/macros/s/AKfycbzEd2fQP7owvJAB8ulOAhiGhlmYWd5ILbihc0_yEbkWKcHoIFoJaGXlIOKXXQ4B8X3e/exec";
+
+document.getElementById("surveyForm").addEventListener("submit", async function(event){
 
     event.preventDefault();
 
-    let season =
+    const season =
         document.querySelector('input[name="season"]:checked').value;
 
-    let temperature =
+    const temperature =
         document.getElementById("temperature").value;
 
-    let activity =
+    const activity =
         document.getElementById("activity").value;
 
-    document.getElementById("results").style.display = "block";
+    try{
 
-    document.getElementById("results").innerHTML =
-        "<h2>Survey Submitted!</h2>" +
-        "<p><strong>Favorite Season:</strong> " + season + "</p>" +
-        "<p><strong>Favorite Temperature:</strong> " + temperature + "°F</p>" +
-        "<p><strong>Favorite Vacation Activity:</strong> " + activity + "</p>";
+        const response = await fetch(WEB_APP_URL,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                season:season,
+                temperature:temperature,
+                activity:activity
+            })
+        });
+
+        const result = await response.json();
+
+        document.getElementById("results").style.display = "block";
+
+        document.getElementById("results").innerHTML =
+            "<h2>Survey Submitted!</h2>" +
+            "<p><strong>Season:</strong> " + season + "</p>" +
+            "<p><strong>Favorite Temperature:</strong> " + temperature + "°F</p>" +
+            "<p><strong>Vacation Activity:</strong> " + activity + "</p>" +
+            "<hr>" +
+            "<p><strong>AI Analysis:</strong></p>" +
+            "<p>" + result.analysis + "</p>";
+
+    }
+    catch(error){
+
+        document.getElementById("results").style.display = "block";
+
+        document.getElementById("results").innerHTML =
+            "<p style='color:red;'>Unable to submit survey.</p>";
+
+        console.error(error);
+    }
+
+});
+
+document.getElementById("analysisBtn").addEventListener("click", async function(){
+
+    try{
+
+        const response =
+            await fetch(WEB_APP_URL + "?action=analysis");
+
+        const data =
+            await response.json();
+
+        document.getElementById("analysisResults").style.display = "block";
+
+        document.getElementById("analysisResults").innerHTML =
+
+        "<h2>Survey Analysis</h2>" +
+
+        "<p><strong>Total Responses:</strong> " +
+        data.totalResponses +
+        "</p>" +
+
+        "<p><strong>Most Popular Season:</strong> " +
+        data.favoriteSeason +
+        "</p>" +
+
+        "<p><strong>Average Temperature:</strong> " +
+        data.averageTemperature +
+        "°F</p>" +
+
+        "<h3>Vacation Activity Themes</h3>" +
+
+        "<ul>" +
+
+        data.activityThemes.map(function(item){
+            return "<li>" + item + "</li>";
+        }).join("") +
+
+        "</ul>";
+
+    }
+    catch(error){
+
+        document.getElementById("analysisResults").style.display = "block";
+
+        document.getElementById("analysisResults").innerHTML =
+            "<p style='color:red;'>Unable to load survey analysis.</p>";
+
+        console.error(error);
+    }
 
 });
 
